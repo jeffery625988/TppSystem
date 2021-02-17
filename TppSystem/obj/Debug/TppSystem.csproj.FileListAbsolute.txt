@@ -1,0 +1,10 @@
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\bin\Debug\TppSystem.exe.config
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\bin\Debug\TppSystem.exe
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\bin\Debug\TppSystem.pdb
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.csprojAssemblyReference.cache
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.Form1.resources
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.Properties.Resources.resources
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.csproj.GenerateResource.cache
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.csproj.CoreCompileInputs.cache
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.exe
+D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.pdb
