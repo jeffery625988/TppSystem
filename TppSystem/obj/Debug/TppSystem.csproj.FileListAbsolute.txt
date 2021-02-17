@@ -8,3 +8,13 @@ D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.cspr
 D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.csproj.CoreCompileInputs.cache
 D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.exe
 D:\清大\人機介面\TppSystem_c#\TppSystem\TppSystem\obj\Debug\TppSystem.pdb
+D:\TppSystem\TppSystem\bin\Debug\TppSystem.exe.config
+D:\TppSystem\TppSystem\bin\Debug\TppSystem.exe
+D:\TppSystem\TppSystem\bin\Debug\TppSystem.pdb
+D:\TppSystem\TppSystem\obj\Debug\TppSystem.csprojAssemblyReference.cache
+D:\TppSystem\TppSystem\obj\Debug\TppSystem.Form1.resources
+D:\TppSystem\TppSystem\obj\Debug\TppSystem.Properties.Resources.resources
+D:\TppSystem\TppSystem\obj\Debug\TppSystem.csproj.GenerateResource.cache
+D:\TppSystem\TppSystem\obj\Debug\TppSystem.csproj.CoreCompileInputs.cache
+D:\TppSystem\TppSystem\obj\Debug\TppSystem.exe
+D:\TppSystem\TppSystem\obj\Debug\TppSystem.pdb
