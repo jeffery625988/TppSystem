@@ -32,7 +32,7 @@ namespace TppSystem
         private void button1_Click(object sender, EventArgs e)                                          //Open File
         {
             ReadFile();
-            
+
         }
         private void label1_Click(object sender, EventArgs e)
         {
@@ -49,29 +49,29 @@ namespace TppSystem
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Multiselect = true; // let us select multifile.
             dialog.Title = "Please select your file";
-            dialog.Filter = "filepath(*.dat)|*.dat";  
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)                            //Read file successful
+            dialog.Filter = "filepath(*.dat)|*.dat";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)                                //Read file successful
             {
                 string[] file = dialog.FileNames;
                 string file_name;
                 for (int i = 0; i < file.Length; i++)
                 {
-                    file_name = file[i].Split('\\').Last();                                              //Get file name
-                    if (file_name.ToList()[0] is 'A')
+                    file_name = file[i].Split('\\').Last();                                                 //Get file name
+                    if (file_name.ToList()[0] is 'A')                                                       //Abs file
                     {
                         int iEnd = textBox2.SelectionLength;
                         textBox2.Text = textBox2.Text.Insert(iEnd, "\r\n");
                         iEnd = textBox2.SelectionLength;
                         textBox2.Text = textBox2.Text.Insert(iEnd, file_name);
                     }
-                    else if (file_name.ToList()[0] is 'R')
+                    else if (file_name.ToList()[0] is 'R')                                                  //Relative file
                     {
                         int iEnd = textBox3.SelectionLength;
                         textBox3.Text = textBox3.Text.Insert(iEnd, "\r\n");
                         iEnd = textBox3.SelectionLength;
                         textBox3.Text = textBox3.Text.Insert(iEnd, file_name);
                     }
-                    else
+                    else                                                                                    //point file
                     {
                         int iEnd = textBox1.SelectionLength;
                         textBox1.Text = textBox1.Text.Insert(iEnd, "\r\n");
@@ -107,6 +107,40 @@ namespace TppSystem
         private void label8_Click(object sender, EventArgs e)
         {
 
+        }
+
+        //PIStage 
+        public class PIStage
+        {
+            public int ID;
+
+            //Constructor
+            public PIStage()                                
+            {
+
+            }
+
+            //Connection
+            public void Connect()
+            {
+
+            }
+            public void Disconnect()
+            {
+
+            }
+            
+            //move
+            public void Move(int target, string moveStyle)
+            {
+
+            }
+
+            //Speed setting
+            public void VelocitySet(int target)
+            {
+
+            }
         }
     }
 }
