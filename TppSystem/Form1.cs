@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+using System.Drawing;
 
 namespace TppSystem
 {
@@ -24,25 +19,13 @@ namespace TppSystem
             this.textBox3.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
         }
 
-        private void groupBox5_Enter(object sender, EventArgs e)
-        {
-
-        }
 
         private void button1_Click(object sender, EventArgs e)                                          //Open File
         {
             ReadFile();
 
         }
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
-        }
+        
         // Read File
         private void ReadFile()
         {
@@ -94,19 +77,40 @@ namespace TppSystem
 
         }
 
-        private void radioButton3_CheckedChanged(object sender, EventArgs e)
+        //AutoFocus (Input start point ,step distance and Which interface ; Output focus zPostion )
+        private double AutoFocus(double startpoint, float ds,string Interface)
         {
 
-        }
+            double zPosition = startpoint;
+            float maxIntensity = 0;
 
-        private void label7_Click(object sender, EventArgs e)
-        {
+            //choose interface
+            switch (Interface)
+            {
+                case "Glass":
+                    for (int i = -5; i <= 5; i++)
+                    {
+                        //Get ccd image intensity
+                        float intensity = 0;
+                        //check is intensity larger than maxintensity 
+                        if (maxIntensity <= intensity)
+                        {
+                            maxIntensity = intensity;
+                            zPosition = startpoint + ds * i;
+                        }
+                        return zPosition;
+                    }
 
-        }
+                    break;
+                case "Air":
+                    
+                    break;
+                default :
+                    break;
+            }
+            
 
-        private void label8_Click(object sender, EventArgs e)
-        {
-
+            return zPosition;
         }
 
         //PIStage 
