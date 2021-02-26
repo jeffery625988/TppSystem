@@ -3,11 +3,16 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Runtime.InteropServices;
+
+
 
 namespace TppSystem
 {
+   
     public partial class Form1 : Form
     {
+        
         public Form1()
         {
             InitializeComponent();
@@ -19,14 +24,14 @@ namespace TppSystem
             this.textBox3.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
         }
 
-
+        
         private void button1_Click(object sender, EventArgs e)                                          //Open File
         {
             ReadFile();
 
         }
         
-        // Read File
+        // Function Read File
         private void ReadFile()
         {
             OpenFileDialog dialog = new OpenFileDialog();
@@ -77,7 +82,7 @@ namespace TppSystem
 
         }
 
-        //AutoFocus (Input start point ,step distance and Which interface ; Output focus zPostion )
+        //Function AutoFocus (Input start point ,step distance and Which interface ; Output focus zPostion )
         private double AutoFocus(double startpoint, float ds,string Interface)
         {
 
@@ -113,10 +118,16 @@ namespace TppSystem
             return zPosition;
         }
 
-        //PIStage 
+        //PIStage (need check each stage's connect process by check the app form PI company)
         public class PIStage
         {
-            public int ID;
+
+
+            public int ID, velocity;
+            public string axis, stageType,usbName;
+            public double stageMin, stageMax, target, position, velocityMin, velocityMax;
+            public bool Flag;
+            
 
             //Constructor
             public PIStage()                                
@@ -127,8 +138,64 @@ namespace TppSystem
             //Connection
             public void Connect()
             {
+                //Long stage
+                if (stageType == "L")
+                {
+                    //need add the dll file into debug dictionary
+                    Flag = PI_API.C7XX_IsConnected(1);
 
+                    //Connect and get stageID
+                    switch (axis)
+                    {
+                        //XY Axis
+                        case "XY":
+                            ID = PI_API.C7XX_ConnectTCPIP("192.168.0.2",50000);
+                            //servo off
+                            PI_API.C7XX_SVO(ID,"A",false);
+                            PI_API.C7XX_SVO(ID, "B", false);
+                            break;
+                        //Z Axis
+                        case "Z":
+                            ID = PI_API.PI_ConnectUSB(usbName);
+                            //servo off
+                            PI_API.PI_SVO(ID, "1", false);
+                            break;
+                    }
+                    
+                                       
+                    
+
+
+                }
+                //Short stage
+                else
+                {
+                    //Connect and get stageID
+                    switch (axis)
+                    {
+                        //XY Axis
+                        case "XY":
+                            ID = PI_API.C7XX_ConnectTCPIP("192.168.0.2", 50000);
+                            //servo off
+                            PI_API.C7XX_SVO(ID, "A", false);
+                            PI_API.C7XX_SVO(ID, "B", false);
+                            break;
+                        //Z Axis
+                        case "Z":
+                            ID = PI_API.PI_ConnectUSB(usbName);
+                            //servo off
+                            PI_API.PI_SVO(ID, "1", false);
+                            break;
+                    }
+
+
+                }
+                
+
+                //
             }
+            
+            //Disconnect
             public void Disconnect()
             {
 
@@ -144,6 +211,37 @@ namespace TppSystem
             public void VelocitySet(int target)
             {
 
+            }
+        }
+
+        public class Aoms
+        {
+        }
+        //Conncet button
+        private void button8_Click(object sender, EventArgs e)
+        {
+            //Create Long , short Stage
+            PIStage LongXY = new PIStage()
+            {
+                ID = 0,
+                usbName = "",
+                stageType = "L",
+                stageMin = -100,
+                stageMax = 100,
+                velocityMax = 100,
+                axis = "XY",
+                velocity = 25,
+
+                
+            };
+            LongXY.Connect();
+            if (LongXY.Flag == false)
+            {
+                textBox17.Text = "";
+            }
+            else
+            {
+                textBox17.Text = "ok";
             }
         }
     }
