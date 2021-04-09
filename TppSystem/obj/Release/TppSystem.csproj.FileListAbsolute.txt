@@ -18,7 +18,7 @@ D:\TppSystem\TppSystem\obj\Debug\TppSystem.csproj.GenerateResource.cache
 D:\TppSystem\TppSystem\obj\Debug\TppSystem.csproj.CoreCompileInputs.cache
 D:\TppSystem\TppSystem\obj\Debug\TppSystem.exe
 D:\TppSystem\TppSystem\obj\Debug\TppSystem.pdb
+D:\TppSystem\TppSystem\obj\Debug\TppSystem.demoapp.AviDialog.resources
+D:\TppSystem\TppSystem\obj\Debug\TppSystem.demoapp.Form1.resources
 D:\TppSystem\TppSystem\bin\Debug\TIS.Imaging.ICImagingControl35.xml
 D:\TppSystem\TppSystem\obj\Debug\TppSystem.csproj.CopyComplete
-D:\TppSystem\TppSystem\obj\Debug\demoapp.AviDialog.resources
-D:\TppSystem\TppSystem\obj\Debug\demoapp.CCD.resources

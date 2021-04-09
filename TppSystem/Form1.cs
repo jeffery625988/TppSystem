@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.IO.Ports;
 using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using TppSystem;
+using demoapp;
+using System.Threading;
 
 
 namespace TppSystem
@@ -24,9 +27,18 @@ namespace TppSystem
             this.textBox3.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
         }
 
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            SerialPort serialPort1 = new SerialPort();
+            serialPort1.PortName = "COM7";
+            serialPort1.BaudRate = 9600;
+            serialPort1.Parity = Parity.None;
+            serialPort1.DataBits = 8;
+            serialPort1.StopBits = StopBits.One;
+        }
         
 
-        
         // Function Read File
         private void ReadFile()
         {
@@ -114,8 +126,11 @@ namespace TppSystem
 
             return zPosition;
         }
-   
-        //PIStage (need check each stage's connect process by check the app form PI company)
+
+       
+        
+
+        //PIStage class (need check each stage's connect process by check the app from PI company)
         public class PIStage
         {
 
@@ -358,15 +373,38 @@ namespace TppSystem
             }
         }
 
+        //Aom class
         public class Aoms
         {
         }
-        //open file button
+
+        //CCD
+        demoapp.CCD ccd = new demoapp.CCD();
+        
+        //LED serial port
+        public SerialPort serialPort1 = new SerialPort();
+
+        //Function Create CCD
+        
+        private void CCDCreate()
+        {
+            if (!ccd.Visible)
+            {
+                ccd.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("CCD is ready");
+            }
+        }
+        
+        //Open file button
         private void button1_Click(object sender, EventArgs e)
         {
             ReadFile();
 
         }
+        
         //Conncet button
         private void button8_Click(object sender, EventArgs e)
         {
@@ -432,6 +470,8 @@ namespace TppSystem
                 axis = "Z",
                 velocity = 25,
             };
+            //create CCD
+            
             
             //Connect
             #region Connect
@@ -521,5 +561,37 @@ namespace TppSystem
             //close and clear timer 
             //sleep
         }
+        
+        //Open CCD 
+        private void button12_Click(object sender, EventArgs e)
+        {
+            
+            Thread CCDThread = new Thread(CCDCreate);
+            CCDThread.Name = "CCD";
+            CCDThread.IsBackground = true;
+            CCDThread.Start();
+            
+        }
+        
+        //Open LED
+        private void button14_Click(object sender, EventArgs e)
+        {
+            serialPort1.Open();
+            serialPort1.Write("1");
+        }
+        
+        //Close LED
+        private void button15_Click(object sender, EventArgs e)
+        {
+            serialPort1.Write("0");
+            serialPort1.Close(); 
+        }
+
+        private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+
+        }
+
+   
     }
 }

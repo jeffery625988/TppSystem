@@ -33,6 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.VisualC" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -44,8 +46,23 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="TIS.Imaging.ICImagingControl35, Version=3.5.6.4008, Culture=neutral, PublicKeyToken=257805929e8b7928, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\TIS.Imaging.ICImagingControl35.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="demoapp\AviDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="demoapp\AviDialog.Designer.cs">
+      <DependentUpon>AviDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="demoapp\CCD.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="demoapp\CCD.Designer.cs" />
+    <Compile Include="demoapp\DeviceSettings.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -55,6 +72,12 @@
     <Compile Include="PI_API.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="demoapp\AviDialog.resx">
+      <DependentUpon>AviDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="demoapp\CCD.resx">
+      <DependentUpon>CCD.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -66,6 +89,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="C7XX_GCS_DLL.lib" />
     <None Include="Properties\Settings.settings">
@@ -84,6 +108,16 @@
   <ItemGroup>
     <Content Include="C7XX_GCS_DLL.dll" />
     <Content Include="C7XX_GCS_DLL.h" />
+    <Content Include="demoapp\CAMERA.BMP" />
+    <Content Include="demoapp\CCDSystem.csproj" />
+    <Content Include="demoapp\DemoApp.ico" />
+    <Content Include="demoapp\film.bmp" />
+    <Content Include="demoapp\IMGSET.bmp" />
+    <Content Include="demoapp\inputchannel.bmp" />
+    <Content Include="demoapp\NEXT.BMP" />
+    <Content Include="demoapp\SETTINGS.bmp" />
+    <Content Include="demoapp\STOP.bmp" />
+    <Content Include="demoapp\Trigger.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
