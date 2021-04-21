@@ -8,14 +8,15 @@ using System.Runtime.InteropServices;
 using TppSystem;
 using demoapp;
 using System.Threading;
+using Thorlabs.PM100D;
 
 
 namespace TppSystem
 {
-   
+
     public partial class Form1 : Form
     {
-        
+
         public Form1()
         {
             InitializeComponent();
@@ -30,119 +31,25 @@ namespace TppSystem
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            SerialPort serialPort1 = new SerialPort();
-            serialPort1.PortName = "COM7";
-            serialPort1.BaudRate = 9600;
-            serialPort1.Parity = Parity.None;
-            serialPort1.DataBits = 8;
-            serialPort1.StopBits = StopBits.One;
+
         }
+
+        //TPPSystem Parameter
         
 
-        // Function Read File
-        private void ReadFile()
-        {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Multiselect = true; // let us select multifile.
-            dialog.Title = "Please select your file";
-            dialog.Filter = "filepath(*.dat)|*.dat";
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)                                //Read file successful
-            {
-                string[] file = dialog.FileNames;
-                string file_name;
-                for (int i = 0; i < file.Length; i++)
-                {
-                    file_name = file[i].Split('\\').Last();                                                 //Get file name
-                    if (file_name.ToList()[0] is 'A')                                                       //Abs file
-                    {
-                       
-                        int iEnd = textBox2.SelectionLength;
-                        textBox2.Text = textBox2.Text.Insert(iEnd, "\r\n");
-                        iEnd = textBox2.SelectionLength;
-                        textBox2.Text = textBox2.Text.Insert(iEnd, file_name);
-                    }
-                    else if (file_name.ToList()[0] is 'R')                                                  //Relative file
-                    {
-                        int iEnd = textBox3.SelectionLength;
-                        textBox3.Text = textBox3.Text.Insert(iEnd, "\r\n");
-                        iEnd = textBox3.SelectionLength;
-                        textBox3.Text = textBox3.Text.Insert(iEnd, file_name);
-                    }
-                    else                                                                                    //point file
-                    {
-                        int iEnd = textBox1.SelectionLength;
-                        textBox1.Text = textBox1.Text.Insert(iEnd, "\r\n");
-                        iEnd = textBox1.SelectionLength;
-                        textBox1.Text = textBox1.Text.Insert(iEnd, file_name);
-                        StreamReader str_read = new StreamReader(file[i]);
-                        textBox4.Text = str_read.ReadToEnd();
-                        str_read.Close();
-                    }
-                }
-                Refresh();
-            }
-            else
-            {
-                textBox1.Text = "";
-                textBox2.Text = "";
-                textBox3.Text = "";
-            }
-
-
-        }
-
-        //Function AutoFocus (Input start point ,step distance and Which interface ; Output focus zPostion )
-        private double AutoFocus(double startpoint, float ds,string Interface)
-        {
-            
-            double zPosition = startpoint;
-            float maxIntensity = 0;
-
-            //choose interface
-            switch (Interface)
-            {
-                case "Glass":
-                    for (int i = -5; i <= 5; i++)
-                    {
-                        //Get ccd image intensity
-                        float intensity = 0;
-                        //check is intensity larger than maxintensity 
-                        if (maxIntensity <= intensity)
-                        {
-                            maxIntensity = intensity;
-                            zPosition = startpoint + ds * i;
-                        }
-                        return zPosition;
-                    }
-
-                    break;
-                case "Air":
-                    
-                    break;
-                default :
-                    break;
-            }
-            
-
-            return zPosition;
-        }
-
-       
-        
-
-        //PIStage class (need check each stage's connect process by check the app from PI company)
+        //PIStage  (need check each stage's connect process by check the app from PI company)
         public class PIStage
         {
 
-            
+
             public int ID, velocity;
-            public string axis, stageType,usbName;
+            public string axis, stageType, usbName;
             public double stageMin, stageMax, target, position, velocityMin, velocityMax;
             public bool Flag;
-            
+
 
             //Constructor
-            public PIStage()                                
+            public PIStage()
             {
 
             }
@@ -161,9 +68,9 @@ namespace TppSystem
                     {
                         //XY Axis
                         case "X":
-                            ID = PI_API.C7XX_ConnectTCPIP("192.168.0.2",50000);
+                            ID = PI_API.C7XX_ConnectTCPIP("192.168.0.2", 50000);
                             //servo off
-                            PI_API.C7XX_SVO(ID,"A",false);
+                            PI_API.C7XX_SVO(ID, "A", false);
                             break;
                         //Y Axis
                         case "Y":
@@ -178,7 +85,7 @@ namespace TppSystem
                             PI_API.PI_SVO(ID, "1", false);
                             break;
                     }
-                 
+
                 }
                 //Short stage
                 else
@@ -199,23 +106,23 @@ namespace TppSystem
                             break;
                         //Z Axis
                         case "Z":
-                            ID = PI_API.PI_ConnectTCPIP("192.168.0.1",50000);
+                            ID = PI_API.PI_ConnectTCPIP("192.168.0.1", 50000);
                             //servo off
                             PI_API.PI_SVO(ID, "1", false);
                             break;
                     }
 
                 }
-                
+
 
                 //
             }
-            
+
             //Disconnect
             public void Disconnect()
             {
                 //Move Home
-                Move(0,"A");
+                Move(0, "A");
 
                 //Turn off servo and Disconnect stage
                 //Long stage
@@ -275,26 +182,26 @@ namespace TppSystem
                 }
 
             }
-            
+
             //Move
             public void Move(int distance, string moveStyle)
             {
                 //moveStyle == A(Absolute) R(Relative)
                 //Long stage
                 if (stageType == "L")
-                { 
+                {
                     switch (axis)
                     {
                         //X Axis
                         case "X":
                             if (moveStyle == "A")
                             {
-                                PI_API.C7XX_MOV(ID, "A", distance);     
+                                PI_API.C7XX_MOV(ID, "A", distance);
                             }
                             else
                             {
                                 PI_API.C7XX_MVR(ID, "A", distance);
-                            }                         
+                            }
                             break;
 
                         //Y Axis
@@ -337,7 +244,7 @@ namespace TppSystem
                             else
                             {
                                 PI_API.E7XX_MVR(ID, "1", distance);
-                            }                            
+                            }
                             break;
                         //Y Axis
                         case "Y":
@@ -373,16 +280,255 @@ namespace TppSystem
             }
         }
 
-        //Aom class
-        public class Aoms
+        //Aom 
+        public class Aom
         {
+            //Parameter
+            public double workVoltage;
+            private double nowVoltage;
+            //real voltage offset
+            float voltageOffset = 0.1f;
+            //real input
+            float fvoltage = 0f;
+            ushort channel_1 = 0;
+            ushort channel_2 = 1;
+            ushort cardID = 0;
+            //Constructor
+            public Aom(float voltage)
+            {
+                SetVoltage(voltage);
+                workVoltage = 0;
+
+            }
+            //Connection
+            public bool EPCIO_Connect()
+            {
+                
+                //set DAC output 
+                EPCIO_API.EPCIO_DAC_SetOutput(channel_1, voltageOffset, cardID);
+                EPCIO_API.EPCIO_DAC_SetOutput(channel_2, 0, cardID);
+                //turnoff DAC for safety
+                EPCIO_API.EPCIO_DAC_StopConv(cardID);
+                //close EPCIO fot safety
+                EPCIO_API.EPCIO_Close(cardID);
+                return true;
+
+            }
+            
+            //Disconnection
+            public bool EPCIO_Disconnect()
+            {
+                //set DAC output 
+                EPCIO_API.EPCIO_DAC_SetOutput(channel_1, voltageOffset, cardID);
+                EPCIO_API.EPCIO_DAC_SetOutput(channel_2, 0, cardID);
+                //turnoff DAC for safety
+                EPCIO_API.EPCIO_DAC_StopConv(cardID);
+                //close EPCIO fot safety
+                EPCIO_API.EPCIO_Close(cardID);
+                return false;
+            }
+
+            //Initialize
+            public bool EPCIO_Init()
+            {
+                //initalize EPCIO-6000/6005 module
+                bool nRet = EPCIO_API.EPCIO6000_Init(null, null, null, null, null, null, null, null, null, cardID);
+                if (nRet)
+                {
+                    return false;
+                }
+                else
+                {
+                    //Reset Module
+                    EPCIO_API.EPCIO_ResetModule(0x0A, cardID);                       
+                    
+                    //Open pulse and DAC output
+                    EPCIO_API.EPCIO_LIO_EnablePulseDAC(cardID);  
+                    
+                    //Servo on 
+                    EPCIO_API.EPCIO_LIO_ServoOn(channel_1, cardID);                   
+                    EPCIO_API.EPCIO_LIO_ServoOn(channel_2, cardID);  
+                    
+                    //Set DAC serial Write frequency divided value = 10
+                    EPCIO_API.EPCIO_DAC_SetClockDivider(10, cardID);                      
+
+                    //Set DAC command to software control
+                    EPCIO_API.EPCIO_DAC_SetCmdSource(channel_1, 0x0, cardID);
+                    EPCIO_API.EPCIO_DAC_SetCmdSource(channel_2, 0x0, cardID);
+
+                    //Start convertion
+                    EPCIO_API.EPCIO_DAC_StartConv(cardID);
+                    return true;                        
+                }
+                
+            }
+            //Set voltage(%)
+            public void  SetVoltage(float voltageP)
+            {
+                //Offset voltage
+                if (voltageP > 100)
+                {
+                    fvoltage = 1.0f + voltageOffset;
+                }
+                else if (voltageP < 0)
+                {
+                    fvoltage = voltageOffset;
+                }
+                else
+                {
+                    fvoltage = voltageOffset + 0.01f * voltageP;
+                    //Set output
+                    EPCIO_API.EPCIO_DAC_SetOutput(channel_1, fvoltage, cardID);
+                    //It's form previous version don't know why need second channel and it's voltage setting
+                    EPCIO_API.EPCIO_DAC_SetOutput(channel_2, 4.8f, cardID);
+                }
+                
+                //
+            }
+            //Now Voltage
+        }
+
+        //Shutter 
+        public class Shutter
+        {
+            public bool Connected = false;
+            public bool State = false;
+            const string COM = "COM2";
+            private SerialPort port = new SerialPort(COM, 9600, Parity.None, 8);
+            //Connect
+            public bool Connect()
+            {
+                port.Open();
+                Thread.Sleep(100);
+                Connected = port.IsOpen;
+                port.Write("MA0\r\n");
+                port.Write("DH\r\n");
+                port.Write("SV150000\r\n");
+                return Connected;
+            }
+            //Disconnect
+            public bool Disconnect()
+            {
+                Close();
+                port.Close();
+                Thread.Sleep(100);
+                Connected = port.IsOpen;
+                return Connected;
+            }
+            //Open shutter
+            public void Open()
+            {
+                //setAOM(0);
+                port.Write("MA100000\r\n");
+                State = true;
+                port.ReadExisting();
+            }
+            //Close shutter
+            public void Close()
+            {
+                //setAOM(0);
+                port.Write("GH\r\n");
+                State = false;
+                port.ReadExisting();
+
+            }
         }
 
         //CCD
         demoapp.CCD ccd = new demoapp.CCD();
         
         //LED serial port
-        public SerialPort serialPort1 = new SerialPort();
+        public SerialPort serialPort1 = new SerialPort("COM4", 9600, Parity.None, 8);
+
+        // Function Read File
+        private void ReadFile()
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Multiselect = true; // let us select multifile.
+            dialog.Title = "Please select your file";
+            dialog.Filter = "filepath(*.dat)|*.dat";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)                                //Read file successful
+            {
+                string[] file = dialog.FileNames;
+                string file_name;
+                for (int i = 0; i < file.Length; i++)
+                {
+                    //Get file name
+                    file_name = file[i].Split('\\').Last();
+                    switch (file_name.ToList()[0])
+                    {
+                        //Abs file
+                        case 'A':
+                            int iEnd = textBox2.SelectionLength;
+                            textBox2.Text = textBox2.Text.Insert(iEnd, "\r\n");
+                            iEnd = textBox2.SelectionLength;
+                            textBox2.Text = textBox2.Text.Insert(iEnd, file_name);
+                            break;
+                        //Relative file
+                        case 'R':
+                            iEnd = textBox3.SelectionLength;
+                            textBox3.Text = textBox3.Text.Insert(iEnd, "\r\n");
+                            iEnd = textBox3.SelectionLength;
+                            textBox3.Text = textBox3.Text.Insert(iEnd, file_name);
+                            break;
+                        //point file
+                        default:
+                            iEnd = textBox1.SelectionLength;
+                            textBox1.Text = textBox1.Text.Insert(iEnd, "\r\n");
+                            iEnd = textBox1.SelectionLength;
+                            textBox1.Text = textBox1.Text.Insert(iEnd, file_name);
+                            //StreamReader str_read = new StreamReader(file[i]);
+                            //textBox4.Text = str_read.ReadToEnd();
+                            //str_read.Close();
+                            break;
+
+
+
+                    }
+                }
+            }
+        }
+
+        //Function AutoFocus (Input start point ,step distance and Which interface ; Output focus zPostion )
+        private double AutoFocus(double startpoint, float ds,string Interface)
+        {
+            
+            double zPosition = startpoint;
+            float maxIntensity = 0;
+
+            //choose interface
+            switch (Interface)
+            {
+                case "Glass":
+                    for (int i = -5; i <= 5; i++)
+                    {
+                        //Get ccd image intensity
+                        float intensity = 0;
+                        //check is intensity larger than maxintensity 
+                        if (maxIntensity <= intensity)
+                        {
+                            maxIntensity = intensity;
+                            zPosition = startpoint + ds * i;
+                        }
+                        return zPosition;
+                    }
+
+                    break;
+                case "Air":
+                    
+                    break;
+                default :
+                    break;
+            }
+            
+
+            return zPosition;
+        }
+
+       
+               
+       
+        
 
         //Function Create CCD
         
@@ -397,13 +543,9 @@ namespace TppSystem
                 MessageBox.Show("CCD is ready");
             }
         }
-        
-        //Open file button
-        private void button1_Click(object sender, EventArgs e)
-        {
-            ReadFile();
 
-        }
+
+        #region button
         
         //Conncet button
         private void button8_Click(object sender, EventArgs e)
@@ -470,12 +612,16 @@ namespace TppSystem
                 axis = "Z",
                 velocity = 25,
             };
-            //create CCD
             
+            //Create Shutter 
+            Shutter shutter = new Shutter();
+
+            //Create AOM
+            Aom Aom = new Aom(0);
             
-            //Connect
-            #region Connect
-            //connect 
+            //Connect stage
+            #region Connect stage
+            //connect long X
             LongX.Connect();
             //check connect
             if (LongX.ID < 0 )
@@ -488,7 +634,7 @@ namespace TppSystem
                 textBox17.Text = "ok";
             }
             
-            //connect 
+            //connect long Y
             LongY.Connect();
             //check connect
             if (LongY.ID < 0)
@@ -500,7 +646,8 @@ namespace TppSystem
             {
                 textBox17.Text = "ok";
             }
-            //connect
+
+            //connect long Z
             LongZ.Connect();
             //check the connection
             if (LongZ.ID < 0)
@@ -513,7 +660,7 @@ namespace TppSystem
                 textBox19.Text = "ok";
             }
 
-            //connect
+            //connect short  X
             ShortX.Connect();
             //check the connection
             if (ShortX.ID < 0)
@@ -526,7 +673,7 @@ namespace TppSystem
                 textBox23.Text = "ok";
             }
 
-            //connect
+            //connect short Y
             ShortY.Connect();
             //check the connection
             if (ShortY.ID < 0)
@@ -539,7 +686,7 @@ namespace TppSystem
                 textBox23.Text = "ok";
             }
 
-            //connect
+            //connect short Z
             ShortZ.Connect();
             //check the connection
             if (ShortZ.ID < 0)
@@ -551,7 +698,14 @@ namespace TppSystem
             {
                 textBox24.Text = "ok";
             }
-            #endregion 
+            #endregion
+
+            //Connect shutter
+            #region Connect shutter
+            shutter.Connect();
+            #endregion
+            
+            //
         }
 
         //Disconnect button
@@ -576,15 +730,20 @@ namespace TppSystem
         //Open LED
         private void button14_Click(object sender, EventArgs e)
         {
+            
             serialPort1.Open();
             serialPort1.Write("1");
+            button15.Enabled = true;
+            button14.Enabled = false;
         }
         
         //Close LED
         private void button15_Click(object sender, EventArgs e)
         {
             serialPort1.Write("0");
-            serialPort1.Close(); 
+            serialPort1.Close();
+            button14.Enabled = true;
+            button15.Enabled = false;
         }
 
         private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -592,6 +751,13 @@ namespace TppSystem
 
         }
 
-   
+        //Open File
+        private void 檔案ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ReadFile();
+        }
+
+        
     }
+    #endregion
 }
