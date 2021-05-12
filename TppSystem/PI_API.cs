@@ -29,8 +29,17 @@ namespace TppSystem
         [DllImport(LongXY_DLL, EntryPoint = "C7XX_qVEL")] public static extern bool C7XX_qVEL(int ID, string szAxes, double pdValarray);
         //Check is connected?
         [DllImport(LongXY_DLL, EntryPoint = "C7XX_IsConnected")] public static extern bool C7XX_IsConnected(int ID);
+        //move
         [DllImport(LongXY_DLL, EntryPoint = "C7XX_MOV")] public static extern bool C7XX_MOV(int ID, string szAxes, double pdValarray);
-        [DllImport(LongXY_DLL, EntryPoint = " C7XX_MVR")] public static extern bool C7XX_MVR(int ID, string szAxes, double pdValarray);
+        //move form reference data
+        [DllImport(LongXY_DLL, EntryPoint = "C7XX_MVR")] public static extern bool C7XX_MVR(int ID, string szAxes, double pdValarray);
+        //gcscommand
+        [DllImport(LongXY_DLL, EntryPoint = "C7XX_GcsCommandset")] public static extern bool C7XX_GcsCommandset(int ID, string cmd);
+        //check move to reference position ok
+        [DllImport(LongXY_DLL, EntryPoint = "C7XX_IsReferenceOK")] public static extern bool C7XX_IsReferenceOK(int ID,string szAxes, bool state);
+        //initialize
+        [DllImport(LongXY_DLL, EntryPoint = "C7XX_INI")] public static extern bool C7XX_INI(int ID, string szAxes);
+
 
         #endregion
 
@@ -45,6 +54,8 @@ namespace TppSystem
         [DllImport(ShortXY_DLL, EntryPoint = "E7XX_ConnectNIgpib")] public static extern int E7XX_ConnectNIgpib(int iBoardNumber, int iDeviceAddress);
         [DllImport(ShortXY_DLL, EntryPoint = "E7XX_MOV")] public static extern int E7XX_MOV(int ID, string szAxes, double pdValueArray);
         [DllImport(ShortXY_DLL, EntryPoint = "E7XX_MVR")] public static extern int E7XX_MVR(int ID, string szAxes, double pdValueArray);
+        //check ini state
+        [DllImport(ShortXY_DLL, EntryPoint = "E7XX_INI")] public static extern bool E7XX_INI(int ID, string szAxes);
         #endregion
 
         #region Z axid
@@ -58,6 +69,9 @@ namespace TppSystem
         [DllImport(Z_DLL, EntryPoint = "PI_CloseConnection")] public static extern void PI_CloseConnection(int ID);
         [DllImport(Z_DLL, EntryPoint = "PI_MOV")] public static extern void PI_MOV(int ID, string szAxes, double pdValueArray);
         [DllImport(Z_DLL, EntryPoint = "PI_MVR")] public static extern void PI_MVR(int ID, string szAxes, double pdValueArray);
+        [DllImport(Z_DLL, EntryPoint = "PI_GcsCommandset")] public static extern bool PI_GcsCommandset(int ID, string cmd);
+        //check frf
+        [DllImport(Z_DLL, EntryPoint = "PI_qFRF")] public static extern bool PI_qFRF(int ID, string szAxes, bool state);
         #endregion
 
     }

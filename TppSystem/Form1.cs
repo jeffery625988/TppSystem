@@ -34,18 +34,19 @@ namespace TppSystem
 
         }
 
-        //TPPSystem Parameter
-        
+        #region Parameter
+        #endregion
+
 
         //PIStage  (need check each stage's connect process by check the app from PI company)
         public class PIStage
         {
 
 
-            public int ID, velocity;
+            public int ID, velocity,exposureType;//exposureType = 1 if upright, = -1 if Inverted
             public string axis, stageType, usbName;
-            public double stageMin, stageMax, target, position, velocityMin, velocityMax;
-            public bool Flag;
+            public double stageMin, stageMax, target, position, velocityMin, velocityMax, defaultVel;
+            public bool Flag, iniState;
 
 
             //Constructor
@@ -118,6 +119,80 @@ namespace TppSystem
                 //
             }
 
+            //Initialization
+            public bool Initialize()
+            {
+                try
+                {
+                    //Long stae
+                    if (stageType == "L")
+                    {
+                        switch (axis)
+                        {
+                            case "X":
+                                PI_API.C7XX_SVO(ID, "A", true);
+                                Thread.Sleep(500);
+                                //move to reference position
+                                PI_API.C7XX_GcsCommandset(ID, "REF");
+                                Thread.Sleep(500);
+
+                                VelocitySet(defaultVel);
+                                Move(0,"A");
+                                return PI_API.C7XX_IsReferenceOK(ID, "",iniState);
+                            case "Y":
+                                PI_API.C7XX_SVO(ID, "B", true);
+                                Thread.Sleep(500);
+
+                                VelocitySet(defaultVel);
+                                Move(0, "A");
+                                return PI_API.C7XX_IsReferenceOK(ID, "", iniState);
+                            case "Z":
+                                PI_API.PI_SVO(ID, "1", true);
+                                Thread.Sleep(500);
+                                PI_API.PI_GcsCommandset(ID, "FRF");
+                                Thread.Sleep(500);
+
+                                VelocitySet(defaultVel);
+                                Move(0, "A");
+                                return PI_API.PI_qFRF(ID, "", iniState);
+                        }
+                        return false;
+                    }
+                    //Short stage
+                    else
+                    {
+                        switch (axis)
+                        {
+                            case "X":
+                                PI_API.E7XX_SVO(ID, "1", true);
+                                Thread.Sleep(500);
+
+                                VelocitySet(defaultVel);
+                                Move(0, "A");
+                                return PI_API.E7XX_INI(ID, "");
+                            case "Y":
+                                PI_API.E7XX_SVO(ID, "2", true);
+                                Thread.Sleep(500);
+
+                                VelocitySet(defaultVel);
+                                Move(0, "A");
+                                return PI_API.E7XX_INI(ID, "");
+                            case "Z":
+                                PI_API.PI_SVO(ID, "1", true);
+                                Thread.Sleep(500);
+   
+                                VelocitySet(defaultVel);
+                                Move(0, "A");
+                                return PI_API.PI_qFRF(ID, "", iniState);
+                        }
+                        return false;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
             //Disconnect
             public void Disconnect()
             {
@@ -184,16 +259,22 @@ namespace TppSystem
             }
 
             //Move
-            public void Move(int distance, string moveStyle)
+            public void Move(double distance, string moveStyle)
             {
                 //moveStyle == A(Absolute) R(Relative)
                 //Long stage
                 if (stageType == "L")
                 {
+                    
+                    
+
                     switch (axis)
                     {
                         //X Axis
                         case "X":
+                            //set 50000um as zero of axis
+                            distance = 50 + 0.001 * distance * exposureType;
+
                             if (moveStyle == "A")
                             {
                                 PI_API.C7XX_MOV(ID, "A", distance);
@@ -206,6 +287,8 @@ namespace TppSystem
 
                         //Y Axis
                         case "Y":
+
+                            distance = 50 - 0.001 * distance * exposureType; 
                             if (moveStyle == "A")
                             {
                                 PI_API.C7XX_MOV(ID, "B", distance);
@@ -217,6 +300,7 @@ namespace TppSystem
                             break;
                         //Z Axis
                         case "Z":
+                            distance = 0.001 * distance * exposureType;
                             if (moveStyle == "A")
                             {
                                 PI_API.PI_MOV(ID, "1", distance);
@@ -237,6 +321,7 @@ namespace TppSystem
                     {
                         //X Axis
                         case "X":
+                            distance = 750 + distance * exposureType;
                             if (moveStyle == "A")
                             {
                                 PI_API.E7XX_MOV(ID, "1", distance);
@@ -248,6 +333,8 @@ namespace TppSystem
                             break;
                         //Y Axis
                         case "Y":
+
+                            distance = 750 - distance * exposureType;
                             if (moveStyle == "A")
                             {
                                 PI_API.E7XX_MOV(ID, "2", distance);
@@ -259,6 +346,8 @@ namespace TppSystem
                             break;
                         //Z Axis
                         case "Z":
+
+                            distance = 125 - distance * exposureType;
                             if (moveStyle == "A")
                             {
                                 PI_API.PI_MOV(ID, "1", distance);
@@ -274,11 +363,81 @@ namespace TppSystem
             }
 
             //Speed setting
-            public void VelocitySet(int target)
+            public void VelocitySet(double target)
             {
 
             }
         }
+
+
+        //PIStage instance
+        PIStage LongX = new PIStage()
+        {
+            ID = 0,
+            stageType = "L",
+            stageMin = -100,
+            stageMax = 100,
+            velocityMax = 100,
+            axis = "X",
+            velocity = 25,
+            exposureType = -1
+        };
+        PIStage LongY = new PIStage()
+        {
+            ID = 0,
+            stageType = "L",
+            stageMin = -100,
+            stageMax = 100,
+            velocityMax = 100,
+            axis = "Y",
+            velocity = 25,
+            exposureType = -1
+        };
+        PIStage LongZ = new PIStage()
+        {
+            ID = 0,
+            usbName = "PI E-861 PiezoWalk(R) Controller SN 0118030732",
+            stageType = "L",
+            stageMin = -100,
+            stageMax = 100,
+            velocityMax = 100,
+            axis = "Z",
+            velocity = 25,
+            exposureType = -1
+        };
+        PIStage ShortX = new PIStage()
+        {
+            ID = 0,
+            stageType = "S",
+            stageMin = -100,
+            stageMax = 100,
+            velocityMax = 100,
+            axis = "XY",
+            velocity = 25,
+            exposureType = -1
+        };
+        PIStage ShortY = new PIStage()
+        {
+            ID = 0,
+            stageType = "S",
+            stageMin = -100,
+            stageMax = 100,
+            velocityMax = 100,
+            axis = "Y",
+            velocity = 25,
+            exposureType = -1
+        };
+        PIStage ShortZ = new PIStage()
+        {
+            ID = 0,
+            stageType = "S",
+            stageMin = -100,
+            stageMax = 100,
+            velocityMax = 100,
+            axis = "Z",
+            velocity = 25,
+            exposureType = -1
+        };
 
         //Aom 
         public class Aom
@@ -286,13 +445,16 @@ namespace TppSystem
             //Parameter
             public double workVoltage;
             private double nowVoltage;
+
             //real voltage offset
             float voltageOffset = 0.1f;
+
             //real input
             float fvoltage = 0f;
             ushort channel_1 = 0;
             ushort channel_2 = 1;
             ushort cardID = 0;
+
             //Constructor
             public Aom(float voltage)
             {
@@ -388,6 +550,9 @@ namespace TppSystem
             //Now Voltage
         }
 
+        //AOM instance
+        Aom AOM = new Aom(0);
+
         //Shutter 
         public class Shutter
         {
@@ -433,6 +598,9 @@ namespace TppSystem
 
             }
         }
+
+        //Shutter instance 
+        Shutter shutter = new Shutter();
 
         //CCD
         demoapp.CCD ccd = new demoapp.CCD();
@@ -549,76 +717,7 @@ namespace TppSystem
         
         //Conncet button
         private void button8_Click(object sender, EventArgs e)
-        {
-            //Create Long , short Stage Need check parameter!!!
-            PIStage LongX = new PIStage()
-            {
-                ID = 0,
-                stageType = "L",
-                stageMin = -100,
-                stageMax = 100,
-                velocityMax = 100,
-                axis = "X",
-                velocity = 25
-            };
-            PIStage LongY = new PIStage()
-            {
-                ID = 0,
-                stageType = "L",
-                stageMin = -100,
-                stageMax = 100,
-                velocityMax = 100,
-                axis = "Y",
-                velocity = 25
-            };
-            PIStage LongZ = new PIStage()
-            {
-                ID = 0,
-                usbName = "PI E-861 PiezoWalk(R) Controller SN 0118030732",
-                stageType = "L",
-                stageMin = -100,
-                stageMax = 100,
-                velocityMax = 100,
-                axis = "Z",
-                velocity = 25,
-            };
-            PIStage ShortX = new PIStage()
-            {
-                ID = 0,
-                stageType = "S",
-                stageMin = -100,
-                stageMax = 100,
-                velocityMax = 100,
-                axis = "XY",
-                velocity = 25,
-            };
-            PIStage ShortY = new PIStage()
-            {
-                ID = 0,
-                stageType = "S",
-                stageMin = -100,
-                stageMax = 100,
-                velocityMax = 100,
-                axis = "Y",
-                velocity = 25,
-            };
-            PIStage ShortZ = new PIStage()
-            {
-                ID = 0,
-                stageType = "S",
-                stageMin = -100,
-                stageMax = 100,
-                velocityMax = 100,
-                axis = "Z",
-                velocity = 25,
-            };
-            
-            //Create Shutter 
-            Shutter shutter = new Shutter();
-
-            //Create AOM
-            Aom Aom = new Aom(0);
-            
+        { 
             //Connect stage
             #region Connect stage
             //connect long X
@@ -705,9 +804,97 @@ namespace TppSystem
             shutter.Connect();
             #endregion
             
-            //
+            //Connect AOM
         }
+        
+        //Initialize
+        private void button10_Click(object sender, EventArgs e)
+        {
+            #region Initialize PIStages
+            bool flag;
+            flag = LongX.Initialize();
+            //Initialize LongX check
+            if (flag)
+            {
+                textBox18.Text = "LongX INI ok";
+                flag = LongY.Initialize();
+                Thread.Sleep(500);
+            }
+            else
+            {
+                textBox18.Text = "LongX INI fail";
+            }
+            //Initialize LongY check
+            if (flag)
+            {
+                textBox18.Text = "LongY INI ok";
+                flag = LongZ.Initialize();
+                Thread.Sleep(500);
+            }
+            else
+            {
+                textBox18.Text = "LongY INI fail";
+            }
+            //Initialize LongZ check
+            if (flag)
+            {
+                textBox18.Text = "LongZ INI ok";
+                flag = ShortX.Initialize();
+                Thread.Sleep(500);
+            }
+            else
+            {
+                textBox18.Text = "LongZ INI fail";
+            }
+            //Initialize ShortX check
+            if (flag)
+            {
+                textBox18.Text = "ShortX INI ok";
+                flag = ShortY.Initialize();
+                Thread.Sleep(500);
+            }
+            else
+            {
+                textBox18.Text = "ShortX INI fail";
+            }
+            //Initialize LongY check
+            if (flag)
+            {
+                textBox18.Text = "ShortY INI ok";
+                flag = ShortZ.Initialize();
+                Thread.Sleep(500);
+            }
+            else
+            {
+                textBox18.Text = "ShortY INI fail";
+            }
+            //Initialize ShortZ check
+            if (flag)
+            {
+                textBox18.Text = "ShortZ INI ok";
+                Thread.Sleep(500);
+            }
+            else
+            {
+                textBox18.Text = "ShortZ INI fail";
+            }
+            #endregion
 
+            #region Initialize AOM
+            if (AOM.EPCIO_Init())
+            {
+                textBox18.Text = "AOM INI ok";
+                textBox25.Text = "ok";
+            }
+            else
+            {
+                textBox18.Text = "AOM INI fail";
+                textBox25.Text = "fail";
+            }
+            #endregion
+
+
+        }
         //Disconnect button
         private void button9_Click(object sender, EventArgs e)
         {
@@ -757,7 +944,13 @@ namespace TppSystem
             ReadFile();
         }
 
-        
+        private void radioButton7_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton7.Enabled == true)
+            {
+                
+            }
+        }
     }
     #endregion
 }
