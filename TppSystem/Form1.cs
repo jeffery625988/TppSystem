@@ -43,16 +43,21 @@ namespace TppSystem
         {
 
 
-            public int ID, velocity,exposureType;//exposureType = 1 if upright, = -1 if Inverted
+            public int ID,exposureType;//if upright exposureType = 1 , if Inverted exposureType = -1 
             public string axis, stageType, usbName;
-            public double stageMin, stageMax, target, position, velocityMin, velocityMax, defaultVel;
-            public bool Flag, iniState;
-
-
+            public double stageMin, stageMax, velocityMin, velocityMax;
+            public double[] pos = new double[1];//current position
+            public double[] tar_pos = new double[1];
+            public double[] velocity = new double[1];
+            public double[] defaultVel = new double[1];
+            public double[] movTarget = new double[1];
+            public bool Flag;
+            public bool[] svoState = new bool[1];
+            public bool[] iniState = new bool[1];
             //Constructor
             public PIStage()
             {
-
+                defaultVel[0] = 25000;
             }
 
             //Connection
@@ -62,28 +67,28 @@ namespace TppSystem
                 if (stageType == "L")
                 {
                     //need add the dll file into debug dictionary
-                    Flag = PI_API.C7XX_IsConnected(1);
-
+                    //Flag = PI_API.C7XX_IsConnected(1);
+                    svoState[0] = false;
                     //Connect and get stageID
                     switch (axis)
                     {
-                        //XY Axis
+                        
+                        //X Axis
                         case "X":
                             ID = PI_API.C7XX_ConnectTCPIP("192.168.0.2", 50000);
                             //servo off
-                            PI_API.C7XX_SVO(ID, "A", false);
+                            PI_API.C7XX_SVO(ID, "A", svoState);
                             break;
                         //Y Axis
                         case "Y":
-                            ID = PI_API.C7XX_ConnectTCPIP("192.168.0.2", 50000);
                             //servo off
-                            PI_API.C7XX_SVO(ID, "B", false);
+                            PI_API.C7XX_SVO(ID, "B", svoState);
                             break;
                         //Z Axis
                         case "Z":
                             ID = PI_API.PI_ConnectUSB(usbName);
                             //servo off
-                            PI_API.PI_SVO(ID, "1", false);
+                            PI_API.PI_SVO(ID, "1", svoState);
                             break;
                     }
 
@@ -91,6 +96,7 @@ namespace TppSystem
                 //Short stage
                 else
                 {
+                    svoState[0] = false;
                     //Connect and get stageID
                     switch (axis)
                     {
@@ -98,18 +104,17 @@ namespace TppSystem
                         case "X":
                             ID = PI_API.E7XX_ConnectNIgpib(0, 4);
                             //servo off
-                            PI_API.E7XX_SVO(ID, "1", false);
+                            PI_API.E7XX_SVO(ID, "1", svoState);
                             break;
                         case "Y":
-                            ID = PI_API.E7XX_ConnectNIgpib(0, 4);
                             //servo off
-                            PI_API.E7XX_SVO(ID, "2", false);
+                            PI_API.E7XX_SVO(ID, "2", svoState);
                             break;
                         //Z Axis
                         case "Z":
                             ID = PI_API.PI_ConnectTCPIP("192.168.0.1", 50000);
                             //servo off
-                            PI_API.PI_SVO(ID, "1", false);
+                            PI_API.PI_SVO(ID, "1", svoState);
                             break;
                     }
 
@@ -127,33 +132,41 @@ namespace TppSystem
                     //Long stae
                     if (stageType == "L")
                     {
+                        movTarget[0] = 0;
+                        svoState[0] = true;
                         switch (axis)
                         {
                             case "X":
-                                PI_API.C7XX_SVO(ID, "A", true);
+                                PI_API.C7XX_INI(ID, "");
+                                PI_API.C7XX_SVO(ID, "A", svoState);
+                                PI_API.C7XX_SVO(ID, "B", svoState);
                                 Thread.Sleep(500);
                                 //move to reference position
                                 PI_API.C7XX_GcsCommandset(ID, "REF");
                                 Thread.Sleep(500);
 
                                 VelocitySet(defaultVel);
-                                Move(0,"A");
+
+                                
+                                Move(movTarget,"A");
                                 return PI_API.C7XX_IsReferenceOK(ID, "",iniState);
                             case "Y":
-                                PI_API.C7XX_SVO(ID, "B", true);
                                 Thread.Sleep(500);
 
                                 VelocitySet(defaultVel);
-                                Move(0, "A");
+                                Move(movTarget, "A");
                                 return PI_API.C7XX_IsReferenceOK(ID, "", iniState);
                             case "Z":
-                                PI_API.PI_SVO(ID, "1", true);
+                                svoState[0] = true;
+                                PI_API.PI_SVO(ID, "1", svoState);
                                 Thread.Sleep(500);
                                 PI_API.PI_GcsCommandset(ID, "FRF");
                                 Thread.Sleep(500);
 
                                 VelocitySet(defaultVel);
-                                Move(0, "A");
+                                Move(movTarget, "A");
+                                Thread.Sleep(500);
+                                PI_API.PI_GOH(ID, "");
                                 return PI_API.PI_qFRF(ID, "", iniState);
                         }
                         return false;
@@ -161,28 +174,34 @@ namespace TppSystem
                     //Short stage
                     else
                     {
+                        movTarget[0] = 0;
+                        svoState[0] = true;
                         switch (axis)
                         {
                             case "X":
-                                PI_API.E7XX_SVO(ID, "1", true);
+                                PI_API.E7XX_SVO(ID, "1", svoState);
                                 Thread.Sleep(500);
 
                                 VelocitySet(defaultVel);
-                                Move(0, "A");
-                                return PI_API.E7XX_INI(ID, "");
+                                Move(movTarget, "A");
+                                return true;//PI_API.E7XX_INI(ID, "");
                             case "Y":
-                                PI_API.E7XX_SVO(ID, "2", true);
+                                PI_API.E7XX_SVO(ID, "2", svoState);
                                 Thread.Sleep(500);
 
                                 VelocitySet(defaultVel);
-                                Move(0, "A");
-                                return PI_API.E7XX_INI(ID, "");
+                                Move(movTarget, "A");
+                                Thread.Sleep(500);
+                                return true;// PI_API.E7XX_INI(ID, "");
                             case "Z":
-                                PI_API.PI_SVO(ID, "1", true);
+                                svoState[0] = true;
+                                PI_API.PI_SVO(ID, "1", svoState);
                                 Thread.Sleep(500);
    
                                 VelocitySet(defaultVel);
-                                Move(0, "A");
+                                Move(movTarget, "A");
+                                Thread.Sleep(500);
+                                PI_API.PI_GOH(ID, "1");
                                 return PI_API.PI_qFRF(ID, "", iniState);
                         }
                         return false;
@@ -197,32 +216,35 @@ namespace TppSystem
             public void Disconnect()
             {
                 //Move Home
-                Move(0, "A");
+                double[] target = new double[1];
+                target[0] = 0;
+                Move(target, "A");
 
                 //Turn off servo and Disconnect stage
                 //Long stage
                 if (stageType == "L")
                 {
-
+                    svoState[0] = false;
                     //Turn off Servo 
                     switch (axis)
                     {
                         //X Axis
                         case "X":
                             //servo off
-                            PI_API.C7XX_SVO(ID, "A", false);
+                            PI_API.C7XX_SVO(ID, "A", svoState);
                             PI_API.C7XX_CloseConnection(ID);
                             break;
                         //Y Axis
                         case "Y":
                             //servo off
-                            PI_API.C7XX_SVO(ID, "B", false);
+                            PI_API.C7XX_SVO(ID, "B", svoState);
                             PI_API.C7XX_CloseConnection(ID);
                             break;
                         //Z Axis
                         case "Z":
                             //servo off
-                            PI_API.PI_SVO(ID, "1", false);
+                            svoState[0] = false;
+                            PI_API.PI_SVO(ID, "1", svoState);
                             PI_API.PI_CloseConnection(ID);
                             break;
                     }
@@ -231,25 +253,27 @@ namespace TppSystem
                 //Short stage
                 else
                 {
+                    svoState[0] = false;
                     //Disconnect
                     switch (axis)
                     {
                         //X Axis
                         case "X":
                             //servo off
-                            PI_API.E7XX_SVO(ID, "1", false);
+                            PI_API.E7XX_SVO(ID, "1", svoState);
                             PI_API.E7XX_CloseConnection(ID);
                             break;
                         //Y Axis
                         case "Y":
                             //servo off
-                            PI_API.E7XX_SVO(ID, "2", false);
+                            PI_API.E7XX_SVO(ID, "2", svoState);
                             PI_API.E7XX_CloseConnection(ID);
                             break;
                         //Z Axis
                         case "Z":
                             //servo off
-                            PI_API.PI_SVO(ID, "1", false);
+                            svoState[0] = false;
+                            PI_API.PI_SVO(ID, "1", svoState);
                             PI_API.PI_CloseConnection(ID);
                             break;
                     }
@@ -259,55 +283,105 @@ namespace TppSystem
             }
 
             //Move
-            public void Move(double distance, string moveStyle)
+            public void Move(double[] distance, string moveStyle)
             {
                 //moveStyle == A(Absolute) R(Relative)
                 //Long stage
                 if (stageType == "L")
                 {
                     
-                    
-
                     switch (axis)
                     {
                         //X Axis
                         case "X":
                             //set 50000um as zero of axis
-                            distance = 50 + 0.001 * distance * exposureType;
-
+                            distance[0] = 0.001 * distance[0];
+                         
                             if (moveStyle == "A")
                             {
-                                PI_API.C7XX_MOV(ID, "A", distance);
+                                distance[0] = 50 + distance[0];
+                                //limit check
+                                if (distance[0] > stageMax || distance[0] < stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.C7XX_MOV(ID, "A", distance);
+                                }
+                                
                             }
                             else
                             {
-                                PI_API.C7XX_MVR(ID, "A", distance);
+                                if (distance[0] + pos[0] > stageMax || distance[0] + pos[0]< stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.C7XX_MVR(ID, "A", distance);
+                                }
+                                
                             }
                             break;
 
                         //Y Axis
                         case "Y":
-
-                            distance = 50 - 0.001 * distance * exposureType; 
+                            distance[0] = 0.001 * distance[0] * exposureType; 
                             if (moveStyle == "A")
                             {
-                                PI_API.C7XX_MOV(ID, "B", distance);
+                                distance[0] = 50 - distance[0];
+                                if (distance[0] > stageMax || distance[0] < stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.C7XX_MOV(ID, "B", distance);
+                                }
                             }
                             else
                             {
-                                PI_API.C7XX_MVR(ID, "B", distance);
+                                if (distance[0] + pos[0] > stageMax || distance[0] + pos[0] < stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.C7XX_MVR(ID, "B", distance);
+                                }
                             }
                             break;
                         //Z Axis
                         case "Z":
-                            distance = 0.001 * distance * exposureType;
+                            distance[0] = 0.001 * distance[0] * exposureType;
                             if (moveStyle == "A")
                             {
-                                PI_API.PI_MOV(ID, "1", distance);
+                                if (distance[0] > stageMax || distance[0] < stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.PI_MOV(ID, "1", distance);
+                                }
                             }
                             else
                             {
-                                PI_API.PI_MVR(ID, "1", distance);
+                                if (distance[0]  + pos[0] > stageMax || distance[0] + pos[0] < stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.PI_MVR(ID, "1", distance);
+                                }
                             }
                             break;
                     }
@@ -321,40 +395,96 @@ namespace TppSystem
                     {
                         //X Axis
                         case "X":
-                            distance = 750 + distance * exposureType;
+                            
                             if (moveStyle == "A")
                             {
-                                PI_API.E7XX_MOV(ID, "1", distance);
+                                distance[0] = 750 + distance[0] * exposureType;
+                                if (distance[0] > stageMax || distance[0] < -stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.E7XX_MOV(ID, "1", distance);
+                                }
                             }
                             else
                             {
-                                PI_API.E7XX_MVR(ID, "1", distance);
+                                if (distance[0] > stageMax || distance[0] < -stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.E7XX_MVR(ID, "1", distance);
+                                }
+                                
                             }
                             break;
                         //Y Axis
                         case "Y":
 
-                            distance = 750 - distance * exposureType;
+                            
                             if (moveStyle == "A")
                             {
-                                PI_API.E7XX_MOV(ID, "2", distance);
+                                distance[0] = 750 - distance[0] * exposureType;
+
+                                if (distance[0] > stageMax || distance[0] < stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.E7XX_MOV(ID, "2", distance);
+                                }
+                                
                             }
                             else
                             {
-                                PI_API.E7XX_MVR(ID, "2", distance);
+                                if (distance[0] + pos[0] > stageMax || distance[0] + pos[0] < stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.E7XX_MVR(ID, "2", distance);
+                                }
                             }
                             break;
                         //Z Axis
                         case "Z":
 
-                            distance = 125 - distance * exposureType;
+                            
                             if (moveStyle == "A")
                             {
-                                PI_API.PI_MOV(ID, "1", distance);
+                                distance[0] = 125 - distance[0] * exposureType;
+                                if (distance[0] > stageMax || distance[0] < stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.PI_MOV(ID, "1", distance);
+                                }
+
                             }
                             else
                             {
-                                PI_API.PI_MVR(ID, "1", distance);
+                                if (distance[0] + pos[0] > stageMax || distance[0] + pos[0] < stageMin)
+                                {
+                                    MessageBox.Show("Out of limit", "Your command out of stage limit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    break;
+                                }
+                                else
+                                {
+                                    PI_API.PI_MVR(ID, "1", distance);
+                                }
+
                             }
                             break;
                     }
@@ -363,9 +493,152 @@ namespace TppSystem
             }
 
             //Speed setting
-            public void VelocitySet(double target)
+            public void VelocitySet(double[] target)
             {
+                
+                if (stageType == "L")
+                {
+                    target[0] = target[0] * 0.001;
+                    switch (axis)
+                    {
+                        case "X":
+                            
+                            PI_API.C7XX_VEL(ID, "A", target);
+                            break;
+                        case "Y":
+                            PI_API.C7XX_VEL(ID, "B", target);
+                            break;
+                        case "Z":
+                            PI_API.PI_VEL(ID, "1", target);
+                            break;
+                    }
+                       
+                }
+                else
+                {
+                    target[0] = target[0] * 0.001;
+                    switch (axis)
+                    {
+                        case "X":
+                            PI_API.E7XX_VEL(ID, "1", target);
+                            break;
+                        case "Y":
+                            PI_API.E7XX_VEL(ID, "2", target);
+                            break;
+                        case "Z":
+                            PI_API.PI_VEL(ID, "1", target);
+                            break;
+                    }
+                }
+            }
 
+            //Get position
+            public void GetPosition()
+            {
+                if (stageType == "L")
+                {
+                    switch (axis)
+                    {
+                        case "X":
+                            PI_API.C7XX_qPOS(ID, "A", pos);
+                            break;
+                        case "Y":
+                            PI_API.C7XX_qPOS(ID, "B", pos);
+                            break;
+                        case "Z":
+                            PI_API.PI_qPOS(ID, "1", pos);
+                            break;
+                    }
+
+                }
+                else
+                {
+                    switch (axis)
+                    {
+                        case "X":
+                            PI_API.E7XX_qPOS(ID, "1", pos);
+                            break;
+                        case "Y":
+                            PI_API.E7XX_qPOS(ID, "2", pos);
+                            break;
+                        case "Z":
+                            PI_API.PI_qPOS(ID, "1", pos);
+                            break;
+                    }
+                }
+
+
+            }
+
+            //Get target position 
+            public void GetTarpos()
+            {
+                if (stageType == "L")
+                {
+                    switch (axis)
+                    {
+                        case "X":
+                            PI_API.C7XX_qMOV(ID, "A", tar_pos);
+                            break;
+                        case "Y":
+                            PI_API.C7XX_qMOV(ID, "B", tar_pos);
+                            break;
+                        case "Z":
+                            PI_API.PI_qMOV(ID, "1", tar_pos);
+                            break;
+                    }
+
+                }
+                else
+                {
+                    switch (axis)
+                    {
+                        case "X":
+                            PI_API.E7XX_qMOV(ID, "1", tar_pos);
+                            break;
+                        case "Y":
+                            PI_API.E7XX_qMOV(ID, "2", tar_pos);
+                            break;
+                        case "Z":
+                            PI_API.PI_qMOV(ID, "1", tar_pos);
+                            break;
+                    }
+                }
+            }
+            //Get speed
+            public void GetVelocity()
+            {
+                if (stageType == "L")
+                {
+                    switch (axis)
+                    {
+                        case "X":
+                            PI_API.C7XX_qVEL(ID, "A", velocity);
+                            break;
+                        case "Y":
+                            PI_API.C7XX_qVEL(ID, "B", velocity);
+                            break;
+                        case "Z":
+                            PI_API.PI_qVEL(ID, "1", velocity);
+                            break;
+                    }
+
+                }
+                else
+                {
+                    switch (axis)
+                    {
+                        case "X":
+                            PI_API.E7XX_qVEL(ID, "1", velocity);
+                            break;
+                        case "Y":
+                            PI_API.E7XX_qVEL(ID, "2", velocity);
+                            break;
+                        case "Z":
+                            PI_API.PI_qVEL(ID, "1", velocity);
+                            break;
+                    }
+                }
             }
         }
 
@@ -375,22 +648,21 @@ namespace TppSystem
         {
             ID = 0,
             stageType = "L",
-            stageMin = -100,
-            stageMax = 100,
+            stageMin = 0,//mm
+            stageMax = 100,//mm
             velocityMax = 100,
             axis = "X",
-            velocity = 25,
-            exposureType = -1
+            exposureType = -1,
+            
         };
         PIStage LongY = new PIStage()
         {
             ID = 0,
             stageType = "L",
-            stageMin = -100,
-            stageMax = 100,
+            stageMin = 0,//mm
+            stageMax = 100,//mm
             velocityMax = 100,
             axis = "Y",
-            velocity = 25,
             exposureType = -1
         };
         PIStage LongZ = new PIStage()
@@ -398,44 +670,40 @@ namespace TppSystem
             ID = 0,
             usbName = "PI E-861 PiezoWalk(R) Controller SN 0118030732",
             stageType = "L",
-            stageMin = -100,
-            stageMax = 100,
+            stageMin = -1,
+            stageMax = 1,
             velocityMax = 100,
             axis = "Z",
-            velocity = 25,
             exposureType = -1
         };
         PIStage ShortX = new PIStage()
         {
             ID = 0,
             stageType = "S",
-            stageMin = -100,
-            stageMax = 100,
+            stageMin = 0,
+            stageMax = 1500,//um
             velocityMax = 100,
-            axis = "XY",
-            velocity = 25,
+            axis = "X",
             exposureType = -1
         };
         PIStage ShortY = new PIStage()
         {
             ID = 0,
             stageType = "S",
-            stageMin = -100,
-            stageMax = 100,
+            stageMin = 0,
+            stageMax = 1500,//um
             velocityMax = 100,
             axis = "Y",
-            velocity = 25,
             exposureType = -1
         };
         PIStage ShortZ = new PIStage()
         {
             ID = 0,
             stageType = "S",
-            stageMin = -100,
-            stageMax = 100,
+            stageMin = 0,
+            stageMax = 250,//um
             velocityMax = 100,
             axis = "Z",
-            velocity = 25,
             exposureType = -1
         };
 
@@ -693,13 +961,17 @@ namespace TppSystem
             return zPosition;
         }
 
-       
+
+        //Tilt correction
+       private void TiltCorrection()
+        {
+
+        }
                
        
         
 
         //Function Create CCD
-        
         private void CCDCreate()
         {
             if (!ccd.Visible)
@@ -717,7 +989,8 @@ namespace TppSystem
         
         //Conncet button
         private void button8_Click(object sender, EventArgs e)
-        { 
+        {
+            
             //Connect stage
             #region Connect stage
             //connect long X
@@ -726,85 +999,97 @@ namespace TppSystem
             if (LongX.ID < 0 )
             {
                 textBox17.Text = "Fail";
-                textBox18.Text = "Long X Connect Fail, Try Reconnect";
+                textBox18.Text = "Long X Connect Fail, Try Disconnect then Reconnect";
+                return;
             }
             else
             {
                 textBox17.Text = "ok";
+                LongY.ID = LongX.ID;
+                Thread.Sleep(500);
+                LongY.Connect();
             }
-            
-            //connect long Y
-            LongY.Connect();
+             
             //check connect
             if (LongY.ID < 0)
             {
                 textBox17.Text = "Fail";
-                textBox18.Text = "Long Y Connect Fail, Try Reconnect";
+                textBox18.Text = "Long Y Connect Fail, Try Disconnect then Reconnect";
+                return;
             }
             else
             {
                 textBox17.Text = "ok";
+                Thread.Sleep(500);
+                LongZ.Connect();
             }
 
-            //connect long Z
-            LongZ.Connect();
             //check the connection
             if (LongZ.ID < 0)
             {
                 textBox19.Text = "Fail";
-                textBox18.Text = "Long Z Connect Fail, Try Reconnect";
+                textBox18.Text = "Long Z Connect Fail, Try Disconnect then Reconnect";
+                return;
             }
             else
             {
                 textBox19.Text = "ok";
+                Thread.Sleep(500);
+                ShortX.Connect();
             }
 
-            //connect short  X
-            ShortX.Connect();
             //check the connection
             if (ShortX.ID < 0)
             {
                 textBox23.Text = "Fail";
-                textBox18.Text = "Short X Connect Fail, Try Reconnect";
+                textBox18.Text = "Short X Connect Fail, Try Disconnect then Reconnect";
+                return;
             }
             else
             {
                 textBox23.Text = "ok";
+                ShortY.ID = ShortX.ID;
+                Thread.Sleep(500);
+                ShortY.Connect();
             }
 
-            //connect short Y
-            ShortY.Connect();
             //check the connection
             if (ShortY.ID < 0)
             {
                 textBox23.Text = "Fail";
-                textBox18.Text = "Short Y Connect Fail, Try Reconnect";
+                textBox18.Text = "Short Y Connect Fail, Try Disconnect then Reconnect";
+                return;
             }
             else
             {
                 textBox23.Text = "ok";
+                Thread.Sleep(500);
+                ShortZ.Connect();
             }
 
-            //connect short Z
-            ShortZ.Connect();
             //check the connection
             if (ShortZ.ID < 0)
             {
                 textBox24.Text = "Fail";
-                textBox18.Text = "Short Z Connect Fail, Try Reconnect";
+                textBox18.Text = "Short Z Connect Fail, Try Disconnect then Reconnect";
+                return;
             }
             else
             {
+                textBox18.Text = "Connect controller ok";
                 textBox24.Text = "ok";
+                return;
             }
             #endregion
-
-            //Connect shutter
-            #region Connect shutter
-            shutter.Connect();
-            #endregion
             
+            //Connect and Initialize shutter
+            #region Connect shutter
+            //shutter.Connect();
+            #endregion
+
             //Connect AOM
+            
+
         }
         
         //Initialize
@@ -812,6 +1097,7 @@ namespace TppSystem
         {
             #region Initialize PIStages
             bool flag;
+            
             flag = LongX.Initialize();
             //Initialize LongX check
             if (flag)
@@ -823,6 +1109,7 @@ namespace TppSystem
             else
             {
                 textBox18.Text = "LongX INI fail";
+                return;
             }
             //Initialize LongY check
             if (flag)
@@ -834,6 +1121,7 @@ namespace TppSystem
             else
             {
                 textBox18.Text = "LongY INI fail";
+                return;
             }
             //Initialize LongZ check
             if (flag)
@@ -845,6 +1133,7 @@ namespace TppSystem
             else
             {
                 textBox18.Text = "LongZ INI fail";
+                return;
             }
             //Initialize ShortX check
             if (flag)
@@ -856,8 +1145,9 @@ namespace TppSystem
             else
             {
                 textBox18.Text = "ShortX INI fail";
+                return;
             }
-            //Initialize LongY check
+            //Initialize ShortY check
             if (flag)
             {
                 textBox18.Text = "ShortY INI ok";
@@ -867,19 +1157,23 @@ namespace TppSystem
             else
             {
                 textBox18.Text = "ShortY INI fail";
+                return;
             }
             //Initialize ShortZ check
             if (flag)
             {
                 textBox18.Text = "ShortZ INI ok";
+                timer1.Enabled = true;
                 Thread.Sleep(500);
             }
             else
             {
                 textBox18.Text = "ShortZ INI fail";
+                return;
             }
             #endregion
-
+            
+            /*
             #region Initialize AOM
             if (AOM.EPCIO_Init())
             {
@@ -892,17 +1186,38 @@ namespace TppSystem
                 textBox25.Text = "fail";
             }
             #endregion
-
+            */
 
         }
         //Disconnect button
         private void button9_Click(object sender, EventArgs e)
         {
-            //Call stages disconnect
-            //close and clear timer 
-            //sleep
+            #region PIStages disconnection
+            LongX.Disconnect();
+            LongY.Disconnect();
+            LongZ.Disconnect();
+            ShortX.Disconnect();
+            ShortY.Disconnect();
+            ShortZ.Disconnect();
+            textBox18.Text = "";
+            #endregion
+
+            #region Turn off AOM
+            //AOM.EPCIO_Disconnect();
+            #endregion
+
+            #region Shutter Disconnection
+            //shutter.Disconnect();
+            #endregion
+            Thread.Sleep(500);
         }
-        
+
+        //Close button
+        private void button11_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
         //Open CCD 
         private void button12_Click(object sender, EventArgs e)
         {
@@ -944,13 +1259,206 @@ namespace TppSystem
             ReadFile();
         }
 
+        //Exposure Type
         private void radioButton7_CheckedChanged(object sender, EventArgs e)
         {
-            if (radioButton7.Enabled == true)
+            if (radioButton7.Checked == true)
             {
-                
+                LongX.exposureType = 1;
+                LongY.exposureType = 1;
+                LongZ.exposureType = 1;
+                ShortX.exposureType = 1;
+                ShortY.exposureType = 1;
+                ShortZ.exposureType = 1;
+            }
+            else
+            {
+                LongX.exposureType = -1;
+                LongY.exposureType = -1;
+                LongZ.exposureType = -1;
+                ShortX.exposureType = -1;
+                ShortY.exposureType = -1;
+                ShortZ.exposureType = -1;
             }
         }
+
+        //Move X
+        private void button2_Click(object sender, EventArgs e)
+        {
+            string moveType = "A";
+            //Get move type
+            if (radioButton1.Checked == true)
+            {
+                moveType = "A";
+            }
+            else
+            {
+                moveType = "R";
+            }
+
+            //short stage
+            if(radioButton4.Checked == true)
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox5.Text);
+                ShortX.Move(target, moveType);
+            }
+            else
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox5.Text);
+                LongX.Move(target, moveType);
+            }
+        }
+
+        //Move Y
+        private void button3_Click(object sender, EventArgs e)
+        {
+            string moveType = "A";
+            //Get move type
+            if (radioButton1.Checked == true)
+            {
+                moveType = "A";
+            }
+            else
+            {
+                moveType = "R";
+            }
+
+            //short stage
+            if (radioButton4.Checked == true)
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox6.Text);
+                ShortY.Move(target, moveType);
+            }
+            else
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox6.Text);
+                LongY.Move(target, moveType);
+            }
+        }
+
+        //Move Z
+        private void button4_Click(object sender, EventArgs e)
+        {
+            string moveType = "A";
+            //Get move type
+            if (radioButton1.Checked == true)
+            {
+                moveType = "A";
+            }
+            else
+            {
+                moveType = "R";
+            }
+
+            //short stage
+            if (radioButton4.Checked == true)
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox7.Text);
+                ShortZ.Move(target, moveType);
+            }
+            else
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox7.Text);
+                LongZ.Move(target, moveType);
+            }
+        }
+
+        //Set speed X
+        private void button7_Click(object sender, EventArgs e)
+        {
+            if (radioButton4.Checked == true)
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox22.Text);
+                ShortX.VelocitySet(target);
+            }
+            else
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox22.Text);
+                LongX.VelocitySet(target);
+            }
+        }
+
+        //Set speed Y 
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if (radioButton4.Checked == true)
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox21.Text);
+                ShortY.VelocitySet(target);
+            }
+            else
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox21.Text);
+                LongY.VelocitySet(target);
+            }
+        }
+
+        //Set speed Z
+        private void button5_Click(object sender, EventArgs e)
+        {
+            if (radioButton4.Checked == true)
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox20.Text);
+                ShortZ.VelocitySet(target);
+            }
+            else
+            {
+                double[] target = new double[1];
+                target[0] = Convert.ToDouble(textBox20.Text);
+                LongZ.VelocitySet(target);
+            }
+        }
+
+        //Update parameter
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            //update current position
+            ShortX.GetPosition();
+            ShortY.GetPosition();
+            ShortZ.GetPosition();
+            LongX.GetPosition();
+            LongY.GetPosition();
+            LongZ.GetPosition();
+            textBox13.Text = Convert.ToString(LongX.pos[0]*1000-50000);
+            textBox12.Text = Convert.ToString(LongY.pos[0]*1000-50000);
+            textBox11.Text = Convert.ToString(LongZ.pos[0]);
+
+            //update target position
+            ShortX.GetTarpos();
+            ShortY.GetTarpos();
+            ShortZ.GetTarpos();
+            LongX.GetTarpos();
+            LongY.GetTarpos();
+            LongZ.GetTarpos();
+            textBox8.Text = Convert.ToString(LongX.tar_pos[0]*1000-50000);
+            textBox9.Text = Convert.ToString(LongY.tar_pos[0]*1000-50000);
+            textBox10.Text = Convert.ToString(LongZ.tar_pos[0]);
+
+            //Update velocity
+            ShortX.GetVelocity();
+            ShortY.GetVelocity();
+            ShortZ.GetVelocity();
+            LongX.GetVelocity();
+            LongY.GetVelocity();
+            LongZ.GetVelocity();
+            textBox16.Text = Convert.ToString(LongX.velocity[0]);
+            textBox15.Text = Convert.ToString(LongY.velocity[0]);
+            textBox14.Text = Convert.ToString(LongZ.velocity[0]);
+
+        }
+
+        
     }
     #endregion
 }

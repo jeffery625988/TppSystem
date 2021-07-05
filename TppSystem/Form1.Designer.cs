@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.檔案ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox12 = new System.Windows.Forms.GroupBox();
@@ -198,6 +199,7 @@
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.button22 = new System.Windows.Forms.Button();
             this.groupBox16 = new System.Windows.Forms.GroupBox();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1.SuspendLayout();
             this.groupBox12.SuspendLayout();
             this.groupBox13.SuspendLayout();
@@ -228,7 +230,7 @@
             // 檔案ToolStripMenuItem
             // 
             this.檔案ToolStripMenuItem.Name = "檔案ToolStripMenuItem";
-            this.檔案ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
+            this.檔案ToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.檔案ToolStripMenuItem.Text = "檔案";
             this.檔案ToolStripMenuItem.Click += new System.EventHandler(this.檔案ToolStripMenuItem_Click);
             // 
@@ -246,6 +248,7 @@
             // radioButton3
             // 
             this.radioButton3.AutoSize = true;
+            this.radioButton3.Checked = true;
             this.radioButton3.Location = new System.Drawing.Point(12, 41);
             this.radioButton3.Name = "radioButton3";
             this.radioButton3.Size = new System.Drawing.Size(44, 16);
@@ -290,6 +293,7 @@
             // radioButton1
             // 
             this.radioButton1.AutoSize = true;
+            this.radioButton1.Checked = true;
             this.radioButton1.Location = new System.Drawing.Point(6, 21);
             this.radioButton1.Name = "radioButton1";
             this.radioButton1.Size = new System.Drawing.Size(38, 16);
@@ -306,6 +310,7 @@
             this.button2.TabIndex = 3;
             this.button2.Text = "Move X";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // button3
             // 
@@ -315,6 +320,7 @@
             this.button3.TabIndex = 4;
             this.button3.Text = "Move Y";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // button4
             // 
@@ -324,6 +330,7 @@
             this.button4.TabIndex = 5;
             this.button4.Text = "Move Z";
             this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
             // textBox5
             // 
@@ -469,6 +476,7 @@
             this.button5.TabIndex = 22;
             this.button5.Text = "Speed Z";
             this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // button6
             // 
@@ -478,6 +486,7 @@
             this.button6.TabIndex = 21;
             this.button6.Text = "Speed Y";
             this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
             // button7
             // 
@@ -487,6 +496,7 @@
             this.button7.TabIndex = 20;
             this.button7.Text = "Speed X";
             this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
             // label8
             // 
@@ -626,6 +636,7 @@
             this.button11.TabIndex = 3;
             this.button11.Text = "Close";
             this.button11.UseVisualStyleBackColor = true;
+            this.button11.Click += new System.EventHandler(this.button11_Click);
             // 
             // label10
             // 
@@ -1875,6 +1886,10 @@
             this.groupBox16.TabStop = false;
             this.groupBox16.Text = "Point Infor";
             // 
+            // timer1
+            // 
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -2102,6 +2117,7 @@
         private System.Windows.Forms.Button button34;
         private System.Windows.Forms.TextBox textBox43;
         private System.Windows.Forms.Label label60;
+        private System.Windows.Forms.Timer timer1;
     }
 }
 

@@ -478,5 +478,57 @@ namespace demoapp
             SetWindowSizeToImagesize();
         }
 
+        //Get intensity 
+        public double GetIntensity(int threshold)
+        {
+            double energyIntensity;
+            try
+            {
+                //start processing  of images delivered by device
+                icImagingControl1.LiveStart();
+
+                //capture image from live video and store into an buffer
+                icImagingControl1.MemorySnapImage(1000);
+
+                int sumpixel = 0;
+                int area = 0;
+                Bitmap imagedata;
+                imagedata = icImagingControl1.ImageActiveBuffer.Bitmap;
+
+                //the number of pixels whose magnitude are larger than threshold
+                for (int x = 0; x < imagedata.Width; x++)
+                {
+                    for (int y = 0; y < imagedata.Height; y++)
+                    {
+                        Color color = imagedata.GetPixel(x, y);
+
+                        //rgb to gray
+                        int newpixel = (color.R * 30 + color.G * 59 + color.B * 11 + 50) / 100;
+                        if (newpixel >= threshold)
+                        {
+                            sumpixel = sumpixel + newpixel;
+                            area = area + 1;
+
+                        }
+                    }
+                }
+                if (area >= 100)
+                {
+                    energyIntensity = (double)sumpixel / (double)area;
+                }
+                else
+                {
+                    energyIntensity = 0;
+                }
+            }
+            catch (Exception)
+            {
+                energyIntensity = 0;
+            }
+            return energyIntensity;
+
+
+        }
+
     }
 }
