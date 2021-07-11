@@ -230,7 +230,7 @@
             // 檔案ToolStripMenuItem
             // 
             this.檔案ToolStripMenuItem.Name = "檔案ToolStripMenuItem";
-            this.檔案ToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.檔案ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.檔案ToolStripMenuItem.Text = "檔案";
             this.檔案ToolStripMenuItem.Click += new System.EventHandler(this.檔案ToolStripMenuItem_Click);
             // 
@@ -752,6 +752,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.BackColor = System.Drawing.SystemColors.InactiveCaption;
             this.groupBox1.Controls.Add(this.label19);
             this.groupBox1.Controls.Add(this.label18);
             this.groupBox1.Controls.Add(this.label17);
@@ -1176,6 +1177,7 @@
             // 
             // groupBox5
             // 
+            this.groupBox5.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.groupBox5.Controls.Add(this.radioButton8);
             this.groupBox5.Controls.Add(this.radioButton7);
             this.groupBox5.Location = new System.Drawing.Point(177, 194);
@@ -1859,6 +1861,7 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.groupBox4.Controls.Add(this.button22);
             this.groupBox4.Controls.Add(this.button12);
             this.groupBox4.Location = new System.Drawing.Point(12, 194);

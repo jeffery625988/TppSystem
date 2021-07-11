@@ -62,6 +62,11 @@ namespace TppSystem
         [DllImport(ShortXY_DLL, EntryPoint = "E7XX_MVR")] public static extern int E7XX_MVR(int ID, string szAxes, double[] pdValueArray);
         //check ini state
         [DllImport(ShortXY_DLL, EntryPoint = "E7XX_INI")] public static extern bool E7XX_INI(int ID, string szAxes);
+
+        //get list of identifier
+        [DllImport(ShortXY_DLL, EntryPoint = "E7XX_qSAI")] public static extern bool E7XX_qSAI(int ID, char[] axes, int iBufferSize);
+        [DllImport(ShortXY_DLL, EntryPoint = "E7XX_GetError")] public static extern int E7XX_GetError(int ID);
+
         #endregion
 
         #region Z axis

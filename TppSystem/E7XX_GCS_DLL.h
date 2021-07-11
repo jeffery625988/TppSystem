@@ -32,9 +32,9 @@ extern "C" {
  	#define E7XX_FUNC_DECL __declspec(dllimport) WINAPI
 #endif
 
-#ifndef BOOL
-#define BOOL int
-#endif
+//#ifndef BOOL
+//#define BOOL int
+//#endif
 
 #ifndef TRUE
 #define TRUE 1
